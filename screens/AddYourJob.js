@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -7,11 +7,40 @@ import axios from "axios";
 
 const AddYourJob = () => {
     const [content, setContent] = useState('');
+    const [notes, setNotes] = useState([]);
     const navigation = useNavigation();
     const route = useRoute();
     const userName = route.params?.userName;
     const note = route.params.note; // Nhận note từ props
     const onFinish = route.params.onFinish;
+    const newNote = route.param?.newNote;
+
+    const fetchNotes = async () => {
+        try {
+            const response = await axios.get(`https://670b84dfac6860a6c2cc4349.mockapi.io/apv/v1/content`);
+            if (response.status === 200) {
+                setNotes(response.data);
+            } else {
+                throw new Error(`Error fetching notes : ${response.status}`);
+            }
+        }
+
+        catch (error) {
+            console.log('Error: ', error);
+            alert('Lỗi kết nối đến server, vui lòng thử lại sau!');
+        }
+    };
+    useEffect(() => {
+        fetchNotes();
+
+    }, []);
+   
+
+    useEffect(() => {
+        if (note) {
+            setContent(note.content);  // Set content bằng nội dung của note khi sửa
+        }
+    }, [note]);
 
     const handleFinish = async () => {
         if (content.trim() === '') {
@@ -31,6 +60,7 @@ const AddYourJob = () => {
                 const newNote = { id: newNoteId, content };
                 const result = await axios.post('https://670b84dfac6860a6c2cc4349.mockapi.io/apv/v1/content', newNote);
                 alert('Ghi chú đã được thêm thành công!');
+                
             }
             // Gọi hàm callback để làm mới danh sách ghi chú
             if (onFinish) {
@@ -38,14 +68,14 @@ const AddYourJob = () => {
             }
 
             // Quay lại NoteList và truyền userName
-            navigation.navigate('NoteList', { userName  });
+            navigation.navigate('NoteList', { userName });
            
 
             // Reset content
             setContent('');
         } catch (error) {
             console.error(error);
-            Alert.alert('Failed to add or edit the note');
+            alert('Failed to add or edit the note');
         }
     };
 

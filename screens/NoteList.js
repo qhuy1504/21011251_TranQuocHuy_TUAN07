@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity, Modal } from "react-native";
 // Hàm xóa ghi chú
-import { Alert } from 'react-native';
 import axios from "axios";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -19,6 +18,8 @@ function NoteList() {
     const navigation = useNavigation();
     const userName = route.params.userName || 'Không tìm thấy user';
     const newNote = route.param?.newNote;
+    const [modalVisibility, setModalVisibility] = useState(false);
+    const [noteIdToDelete, setNoteIdToDelete] = useState(null);
 
     
         const fetchNotes = async () => {
@@ -40,19 +41,16 @@ function NoteList() {
         fetchNotes();
 
     }, []);
-    useEffect(() => {
-        if (newNote && newNote.content) {
-            setNotes(prevNotes => [...prevNotes, newNote]);
-        }
-    }, [newNote]);
-    // Đảm bảo rằng bạn định nghĩa hàm này
-    const handleRefresh = () => {
-        fetchNotes(); // Tải lại danh sách ghi chú khi cần
-    };
+
     // Gọi fetchNotes khi màn hình được hiển thị
 
     const filteredNotes = notes.filter(note => note.content.toLowerCase().includes(search.toLowerCase()));
 
+    // Hàm mở modal xác nhận xóa
+    const openDeleteModal = (id) => {
+        setNoteIdToDelete(id);
+        setModalVisibility(true);
+    };
 
 
 
@@ -61,6 +59,8 @@ function NoteList() {
     const handleDelete = async (id) => {
 
         console.log('Xóa ghi chú với ID:', id); // Kiểm tra giá trị id
+        setModalVisibility(false); // đóng modal sau khi xóa
+        setNoteIdToDelete(null); // reset lại giá trị noteIdToDelete
 
         try {
             await axios.delete(`https://670b84dfac6860a6c2cc4349.mockapi.io/apv/v1/content/${id}`);
@@ -71,6 +71,8 @@ function NoteList() {
         }
 
     };
+    
+
 
 
 
@@ -79,7 +81,38 @@ function NoteList() {
 
 
     return (
+
         <View style={styles.container}>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisibility}
+                onRequestClose={() => setModalVisibility(false)}
+
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Xác nhận xóa</Text>
+                        <Text style={styles.modalMessage}>Bạn có chắc chắn muốn xóa ghi chú này không?</Text>
+                        <View style={styles.modalButtons}>      
+                            <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisibility(false)}>
+                                <Text style={styles.modalButtonText}>Hủy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.modalButton} onPress={() => { handleDelete(noteIdToDelete) }}>
+                                <Text style={styles.modalButtonText2}>Đồng ý</Text>
+                            </TouchableOpacity>
+                        </View>   
+                    </View> 
+                </View>
+
+
+
+
+
+
+            </Modal>
+
+
             <ScrollView style={styles.scrollview}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.navigate('Home')}> <FontAwesome name="arrow-left" size={25} style={styles.icon2} /></TouchableOpacity>
@@ -125,7 +158,7 @@ function NoteList() {
                                     <TouchableOpacity style={styles.iconEditTouch} onPress={() => navigation.navigate('AddYourJob', { userName, note: item, onFinish: fetchNotes })}>
                                         <FontAwesome name="pencil" size={25} style={styles.iconEdit} />
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.iconDeleteTouch} onPress={() => handleDelete(item.id)}>
+                                    <TouchableOpacity style={styles.iconDeleteTouch} onPress={() => openDeleteModal(item.id)}>
                                         <FontAwesome name="trash" size={25} style={styles.iconDelete} />
                                     </TouchableOpacity>
                                 </View>
@@ -149,7 +182,7 @@ function NoteList() {
                 />
                 < View style={styles.buttonPlusContainer}>
                     <TouchableOpacity style={styles.buttonPlus}
-                        onPress={() => navigation.navigate('AddYourJob', { userName })}>
+                        onPress={() => navigation.navigate('AddYourJob', { userName,  onFinish: fetchNotes })}>
 
                         <Text style={styles.textbuttonPlus}>+</Text>
                     </TouchableOpacity>
@@ -281,7 +314,44 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         alignItems: 'center',
         color: '#fff',
-    }
+    }, modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+
+    }, modalContent: {
+        width: '80%',
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: 20,
+    },
+    modalButtonText2: {
+        padding: 10,
+        marginHorizontal: 10,
+        backgroundColor: 'green',
+        borderRadius: 5,
+        color: '#fff',
+    },
+    modalButtonText: {
+        padding: 10,
+        marginHorizontal: 10,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        color: '#fff',
+    },
 
 
 

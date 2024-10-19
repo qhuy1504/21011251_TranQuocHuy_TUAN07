@@ -80,9 +80,9 @@ const Home = () => {
               
                 
             </View>
-            <TouchableOpacity style={styles.loginButton2} >
+            {/* <TouchableOpacity style={styles.loginButton2} >
                 <Text style={styles.loginText} >Login</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
         </View>
 

@@ -12,19 +12,14 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    cd tranquochuy
 
    ```
-2. Install more
+1. Install dependencies
 
    ```bash
    Install navigation và icon(fontawesome): Chạy các lệnh sau
-   ...
-    ```bash
- npm install @react-navigation/native @react-navigation/stack react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
- ...
-  ```bash
-npm install react-native-vector-icons
-...
-   ```
+   npm install @react-navigation/native @react-navigation/stack react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
+   npm install react-native-vector-icons
 
+   ```
 3. Start the app
 
    ```bash
